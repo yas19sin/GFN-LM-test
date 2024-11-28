@@ -56,7 +56,7 @@ callbacks:
 
 constraints:
   min_sentence_len: 1
-  max_sentence_len: 30
+  max_sentence_len: 64
   illegal_tokens: [
     #"<|endoftext|>",
     "<|eot_id|>",
