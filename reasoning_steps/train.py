@@ -33,10 +33,17 @@ def train(config: DictConfig):
         end_of_sentence_token_id = tokenizer.convert_tokens_to_ids(".")
     illegal_token_mask = torch.zeros(tokenizer.vocab_size, dtype=torch.bool)
     illegal_tokens = OmegaConf.to_container(config.task.constraints.illegal_tokens)
-    illegal_tokens = [
-        [t] if isinstance(t, int) else tokenizer.encode(t, add_special_tokens=False)
-        for t in illegal_tokens
-    ]
+    # Convert each token to its ID, ensuring single tokens only
+    illegal_tokens = []
+    for t in OmegaConf.to_container(config.task.constraints.illegal_tokens):
+        if isinstance(t, int):
+            illegal_tokens.append([t])
+        else:
+            encoded = tokenizer.encode(t, add_special_tokens=False)
+            if len(encoded) > 1:
+                print(f"Warning: Token '{t}' encodes to multiple tokens {encoded}. Using first token only.")
+            illegal_tokens.append([encoded[0]])
+    
     assert all(len(t) == 1 for t in illegal_tokens)
     illegal_tokens = [t[0] for t in illegal_tokens]
     illegal_token_mask[illegal_tokens] = True
